@@ -1,0 +1,32 @@
+{% extends "loan_equipment_manager/layout.html" %}
+
+{% block body %}
+
+<div class="container">
+    <table class="table table-dark table-striped" id="myLoansTable">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Make</th>
+                <th scope="col">Model</th>
+                <th scope="col">Loan start</th>
+                <th scope="col">Loan end</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+                <tr class="item" id="item">
+                    <th scope="row">{{ forloop.counter }} </th>
+                    <td>{{req.make}}</td>
+                    <td>{{req.model}}</td>
+                    <td>{{req.start_date}}</td>
+                    <td>{{req.end_date}}</td>
+                    <td>{{req.status}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

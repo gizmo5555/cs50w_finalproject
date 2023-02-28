@@ -1,0 +1,42 @@
+{% extends "loan_equipment_manager/layout.html" %}
+
+{% block body %}
+<div class="container register">
+    <h2>Register</h2>
+
+    <div class="form">
+        <form action="{% url 'register' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <input class="form-control" autocomplete="off" autofocus type="text" name="username" placeholder="Username">
+            </div>
+            <div class="form-group">
+                <input class="form-control" autocomplete="off" type="text" name="fname" placeholder="First Name">
+            </div>
+            <div class="form-group">
+                <input class="form-control" autocomplete="off" type="text" name="lname" placeholder="Last Name">
+            </div>
+            <div class="form-group">
+                <input class="form-control" autocomplete="off" type="email" name="email" placeholder="Email Address">
+            </div>
+            <div class="form-group">
+                <input class="form-control" type="password" name="password" placeholder="Password">
+            </div>
+            <div class="form-group">
+                <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password">
+            </div>
+            <input class="btn btn-primary" type="submit" value="Register">
+        </form>
+    </div>
+
+    {% if message %}
+        <div class="alert alert-danger" role="alert">
+            <span>{{message}}</span>
+        </div>
+    {% endif %}
+
+    <div class="tip">
+        Already have an account? <a href="{% url 'login' %}">Log In here.</a>
+    </div>
+</div>
+{% endblock %}

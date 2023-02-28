@@ -1,0 +1,12 @@
+{% extends "loan_equipment_manager/layout.html" %}
+
+{% block body %}
+    <div class="container">
+       {% for item in item %}
+            <div>{{item.make}}</div>
+            <div>{{item.model}}</div>
+            <div>{{item.asset_number}}</div>
+            <div>{{item.notes}}</div>
+       {% endfor %}
+    </div>
+{% endblock %}

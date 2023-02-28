@@ -1,0 +1,1 @@
+INSERT into loan_equipment_manager_loan_item (asset_number, make, model, category, loan_start_date, loan_end_date, on_loan, qr_code, notes) values ("LEM24", "Logitech", "Z207", "Audio", null, null, "No", null, "Wireless speakers. ")

@@ -1,0 +1,57 @@
+{% extends "loan_equipment_manager/layout.html" %}
+
+{% block body %}
+    {% if user.is_authenticated %}
+    <div class="container-fluid ">
+        <h1>Welcome, {{user.first_name}}!</h1>
+        <div class="row infocards">
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+              <h5 class="card-title">Items on loan</h5>
+              <p class="card-text">{{loans}}</p>
+              <!--<a href="{% url 'my_loans' %}" class="btn btn-primary infobtn">My loans</a>-->
+            </div>
+          </div>
+
+          <div class="card" style="width: 18rem;">
+            <div class="card-body">
+              <h5 class="card-title">Items overdue</h5>
+              <p class="card-text">{{overdue}}</p>
+              <!--<a href="#" class="btn btn-primary infobtn">My loans</a>-->
+            </div>
+          </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="login container">
+        <h2>Login</h2>
+    
+        <div class="form">
+            <form action="{% url 'login' %}" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input autofocus autocomplete="off" class="form-control" type="text" name="username" placeholder="Username">
+                </div>
+                <div class="form-group">
+                    <input class="form-control" type="password" name="password" placeholder="Password">
+                </div>
+                <input class="btn btn-primary" type="submit" value="Login">
+            </form>
+        </div>
+    
+        {% if message %}
+            <div class="alert alert-danger" role="alert">
+                <span>{{message}}</span>
+            </div>
+        {% elif message_success %}
+        <div class="alert alert-success" role="alert">
+            <span>{{message_success}}</span>
+        </div>
+        {% endif %}
+       
+        <div class="tip">
+            Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}

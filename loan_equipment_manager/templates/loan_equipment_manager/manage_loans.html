@@ -1,0 +1,76 @@
+{% extends "loan_equipment_manager/layout.html" %}
+
+{% block body %}
+
+<div class="container manage-loans">
+    <div id="alert-box"></div>
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+          <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-active" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Active Loans</button>
+          <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-closed" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Closed Loans</button>
+        </div>
+    </nav>
+      <div class="tab-content" id="nav-tabContent">
+        {% csrf_token %}
+        <div class="tab-pane fade show active" id="nav-active" role="tabpanel" aria-labelledby="nav-home-tab">
+            <table class="table table-dark table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Loan number</th>
+                        <th scope="col">Item</th>
+                        <!---<th scope="col">Items count</th>-->
+                        <th scope="col">User</th>
+                        <th scope="col">Start date</th>
+                        <th scope="col">End date</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for loan in activeloans %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }} </th>
+                    <td>{{loan.loan_number}}</td>
+                    <td>{{loan.make}} {{loan.model}}</td>
+                    <td>{{loan.first_name}} {{loan.last_name}}</td>
+                    <td>{{loan.start_date}}</td>
+                    <td>{{loan.end_date}}</td>
+                    <td><a class="btn btn-danger" id="closeLoanBtn">Close Loan</a></td>
+                </tr>           
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div class="tab-pane fade" id="nav-closed" role="tabpanel" aria-labelledby="nav-profile-tab">
+            <table class="table table-dark table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Loan number</th>
+                        <th scope="col">Item</th>
+                        <!--<th scope="col">Items count</th>-->
+                        <th scope="col">User</th>
+                        <th scope="col">Start date</th>
+                        <th scope="col">End date</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    {% for loan in closedloans %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }} </th>
+                    <td>{{loan.loan_number}}</td>
+                    <td>{{loan.make}} {{loan.model}}</td>
+                    <td>{{loan.first_name}} {{loan.last_name}}</td>
+                    <td>{{loan.start_date}}</td>
+                    <td>{{loan.end_date}}</td>
+                    <!--<td><a class="btn btn-secondary" href="">Close Loan</a></td>-->
+                </tr>           
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

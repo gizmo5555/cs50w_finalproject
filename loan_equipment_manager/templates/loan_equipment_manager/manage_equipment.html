@@ -1,0 +1,164 @@
+{% extends "loan_equipment_manager/layout.html" %}
+
+{% block body %}
+<div class="container">   
+    {%csrf_token%}
+    <div id="alert-box"></div>
+    <table class="table-fixed table table-dark table-striped table-hover" id="itemsTable">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Asset number</th>
+                <th scope="col">Make</th>
+                <th scope="col">Model</th>
+                <th scope="col">On loan</th>
+                <th scope="col">Notes</th>
+                <th scope="col">User</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in equipment %}
+            <tr class="item" id="item">
+                <th scope="row">{{ forloop.counter }} </th>
+                <td>{{item.asset_number}}</td>
+                <td>{{item.make}}</td>
+                <td>{{item.model}}</td>
+                <td>{{item.on_loan}}</td>
+                <td>{{item.notes}}</td>
+                <td>                
+                    {% if loan %}
+                        {% for loan in loan %}                    
+                            {% if loan.loan_item_id == item.id %}
+                                {% for user in users %}                            
+                                    {% if user.id == loan.end_user_id %}
+                                        {{user.first_name}} {{user.last_name}}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <!--<td><a class="btn btn-secondary" href="{% url 'manage_item' item.id %}" >Update</a></td>-->
+                <td><button type="button" id="updateItemButton" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Update</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table> 
+
+    <div class="input-group mb-3">
+        <button type="button" id="addNewItem" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdropAddItem">Add loan equipment</button>
+    </div>
+
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div id="alert-box-failure"></div>
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-body">
+                <div id="modal">
+                    <form name="edit_item" id="edit_item">
+                        {% csrf_token %}
+                        <div class="row g-3 align-items-center item_edit" id="item_edit">
+                            <div class="col-4" id="item_row_label">
+                              <label for="asset-input" class="col-form-label">Asset number:</label>
+                            </div>
+                            <div class="col align-self-end input-group">
+                                <span class="input-group-text" id="basic-addon1">LEM</span>
+                                <input name='asset_id' type="text" id="asset-input" class="form-control" aria-describedby="asset-input">
+                            </div>
+                        </div>
+                        <div class="row g-3 align-items-center item_edit">
+                            <div class="col-4">
+                              <label for="make-input" class="col-form-label text-end">Make:</label>
+                            </div>
+                            <div class="col align-self-end">
+                              <input name='make' type="text" id="make-input" class="form-control" aria-describedby="make-input">
+                            </div>
+                        </div>
+                        <div class="row g-3 align-items-center item_edit">
+                            <div class="col-4">
+                              <label for="model-input" class="col-form-label text-end">Model:</label>
+                            </div>
+                            <div class="col align-self-end">
+                              <input name='model' type="text" id="model-input" class="form-control" aria-describedby="model-input">
+                            </div>
+                        </div>
+                        <div class="row g-3 align-items-center item_edit">
+                            <div class="col-4">
+                              <label for="notes-input" class="col-form-label text-end">Notes:</label>
+                            </div>
+                            <div class="col align-self-end">
+                              <input name='notes' type="text" id="notes-input" class="form-control" aria-describedby="notes-input">
+                            </div>
+                        </div>                  
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="edit_item_btn">Save and update</button>
+                        </div>
+                    </form>
+                  </div>
+            </div>           
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="staticBackdropAddItem" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div id="alert-box-failure"></div>
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-body">
+                <div id="modal">
+                    <form name="edit_item" id="edit_item">
+                        {% csrf_token %}
+                        <div class="row g-3 align-items-center item_edit" id="item_edit">
+                            <div class="col-4" id="item_row_label">
+                              <label for="asset-input" class="col-form-label">Asset number:</label>
+                            </div>
+                            <div class="col align-self-end input-group">
+                                <span class="input-group-text" id="newItemAssetNum"></span>
+                            </div>
+                        </div>
+                        <div class="row g-3 align-items-center item_edit">
+                            <div class="col-4">
+                              <label for="make-input" class="col-form-label text-end">Category:</label>
+                            </div>
+                            <div class="col align-self-end">
+                                    <select class="form-select" aria-label="Category" id="category">
+                                    </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 align-items-center item_edit">
+                            <div class="col-4">
+                              <label for="make-input" class="col-form-label text-end">Make:</label>
+                            </div>
+                            <div class="col align-self-end">
+                              <input name='make' type="text" id="make-input" class="form-control" aria-describedby="make-input">
+                            </div>
+                        </div>
+                        <div class="row g-3 align-items-center item_edit">
+                            <div class="col-4">
+                              <label for="model-input" class="col-form-label text-end">Model:</label>
+                            </div>
+                            <div class="col align-self-end">
+                              <input name='model' type="text" id="model-input" class="form-control" aria-describedby="model-input">
+                            </div>
+                        </div>
+                        <div class="row g-3 align-items-center item_edit">
+                            <div class="col-4">
+                              <label for="notes-input" class="col-form-label text-end">Notes:</label>
+                            </div>
+                            <div class="col align-self-end">
+                              <input name='notes' type="text" id="notes-input" class="form-control" aria-describedby="notes-input">
+                            </div>
+                        </div>                  
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="edit_item_btn">Add and close</button>
+                        </div>
+                    </form>
+                  </div>
+            </div>           
+          </div>
+        </div>
+    </div>
+{% endblock %}

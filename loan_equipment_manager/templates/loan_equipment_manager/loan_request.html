@@ -1,0 +1,46 @@
+{% extends "loan_equipment_manager/layout.html" %}
+
+{% block body %}
+<div class="container loanrequest">
+    <div id="alert-box"></div>
+    <h2>Select equipment</h2>
+    <div class="form">
+        <form name="request_form" id="request_form">
+            {% csrf_token %}
+            <div class="mb-1 row">
+                <label for="category" class="col-sm-3 col-form-label">Category</label>
+                <div class="col-sm-9" id="cat">
+                    <select class="form-select" aria-label="Category" id="category">
+                    </select>
+                </div>
+            </div>
+            <div class="mb-1 row">
+                <label for="item" class="col-sm-3 col-form-label">Item</label>
+                <div class="col-sm-9">
+                    <select class="form-select" aria-label="Item" name="items" id="itemselection">
+                        <option value="..." selected>...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-1 row">
+                <label for="start" class="col-sm-3 col-form-label">Start date</label>
+                <div class="col-sm-9">
+                    <input class="calendar" type="date" id="start" name="loan_start"
+                        value=""
+                        onchange="setMinLoanDate()"
+                        >
+                </div>
+            </div>
+            <div class="mb-1 row">
+                <label for="end" class="col-sm-3 col-form-label">End date</label>
+                <div class="col-sm-9">
+                    <input class="calendar" type="date" id="end" name="loan_end"
+                        value=""
+                        >
+                </div>
+            </div>
+            <input class="btn btn-primary" type="submit" value="Request" id="submitbtn" >
+        </form>
+    </div>
+</div>
+{% endblock %}

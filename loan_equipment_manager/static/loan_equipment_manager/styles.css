@@ -1,0 +1,131 @@
+html, body {
+    position: relative;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    overflow: auto;
+  }
+
+
+.table{
+    margin:20px;
+    width: 100%;
+    
+}
+
+tbody{
+    overflow-y: auto;      
+    height: 10px;            
+    width: 100%;
+   
+}
+
+.manage-loans{
+    margin-top:20px;
+}
+
+.register{
+    max-width: 450px !important;
+}
+
+.login{
+    max-width: 450px !important;
+}
+
+.loanrequest{
+    margin-top:20px;
+    max-width: 450px !important;
+}
+
+.calendar{
+    height:38px;
+    width:100%;
+    border-radius: 0.25rem;
+    border:1px;
+    border-style: solid;
+    border-color: #ced4da;
+}
+
+.rounded-full{
+    border-radius: 100%;
+}
+
+.secondary-bg{
+    color:aqua;
+}
+
+.not-visible{
+    display: none;
+}
+
+.infocards{
+    display: flex;
+    justify-content: center;
+    margin:15px;
+}
+
+.card{
+    margin:15px;
+}
+
+.card-text{
+    margin-top:25px;
+    margin-bottom:25px;
+    text-align: center;
+    font-size:25px;
+}
+
+.card-title{
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.infobtn{
+    text-align: center;  
+
+}
+
+#btn-action{
+    margin-left:10px;
+}
+
+.btn-reject{
+    margin-left:10px;
+}
+
+#alert-box{
+    margin-top:10px;
+}
+
+h1{
+    text-align: center;
+    margin-top:100px;
+}
+
+
+footer{
+    text-align: center;
+    margin-top:50px;
+}
+
+.text-muted{
+    margin-top:50px;
+}
+
+.item_edit{
+    padding: 5px;
+    
+}
+
+.item_row_label{
+    text-align: left;
+}
+
+.lem_label{
+    display: inline; 
+}
