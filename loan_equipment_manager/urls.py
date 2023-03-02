@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import loan_categories, loan_items, create_request, accept_request, reject_request, manage_item #,create_loan,
+from .views import loan_categories, loan_items, create_request, accept_request, reject_request, manage_item ,create_loan_item, get_asset_number
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -22,7 +22,8 @@ urlpatterns = [
     path("categories-json/", loan_categories, name="categories-json"),
     path("items-json/<str:cat>/", loan_items, name="items-json"),
     path('create_request/', create_request, name="create_request"),
-    path('create_loan_item/', views.create_loan_item, name='create_loan_item'),
+    path('create_loan_item/', create_loan_item, name='create_loan_item'),
+    path('get_asset_number/', get_asset_number, name="get_asset_number"),
     path('accept_request/<int:id>', accept_request, name="accept_request"),
     path('reject_request/<int:id>', reject_request, name="reject_request")
 

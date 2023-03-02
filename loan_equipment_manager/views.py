@@ -1,6 +1,6 @@
 from tracemalloc import start
 from django.contrib.auth import authenticate, login, logout
-from django.db import IntegrityError
+from django.db import Error, IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -15,6 +15,8 @@ import logging
 import json
 from datetime import datetime
 from django.contrib import auth
+from django.db.models.functions import Cast, Substr
+from django.db.models import IntegerField
 
 def index(request):
     
@@ -95,11 +97,30 @@ def register(request):
 @login_required
 @restricted_view
 def manage_equipment(request):
-    return render(request, "loan_equipment_manager/manage_equipment.html", {
-        "equipment": Loan_item.objects.all(),
-        "loan":Loan.objects.all(),
-        "users":User.objects.all()
-    })
+    """
+    This view returns all items in Loan_item model
+    which is used to populate items table in manage_equipment template
+
+    Args:
+        request: The HTTP request.
+
+    Returns:
+        Json or render
+    
+    """
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        equipment = Loan_item.objects.all()
+        equipment_list = list(equipment.values())
+        list_as_json = json.dumps(equipment_list)
+
+        return JsonResponse(list_as_json, safe=False)
+    
+    else:
+        return render(request, "loan_equipment_manager/manage_equipment.html", {
+            "equipment": Loan_item.objects.all(),
+            "loan":Loan.objects.filter(active_loan="Yes"),
+            "users":User.objects.all()
+        })
 
 @login_required
 @restricted_view
@@ -110,9 +131,20 @@ def manage_users(request):
 
 @login_required
 def my_loans(request):
+    """
+    This view returns all loans for current user
+    which is used to populate active loans and closed loans tables in my_loans template
 
+    Args:
+        request: The HTTP request.
+
+    Returns:
+        render
+    
+    """
     loanObj = []
     userLoans = []
+    userClosedLoans = []
     loans = Loan.objects.filter(end_user_id = request.user.id)
 
     if loans:
@@ -126,17 +158,31 @@ def my_loans(request):
             status = ""
             if loan.active_loan == "Yes":
                 status = "Active"
+                loanObj = {"status": status, "start_date":start_date, "end_date":end_date, "make":make, "model":model}
+                userLoans.append(loanObj)
             else:
                 status = "Ended"
-            loanObj = {"status": status, "start_date":start_date, "end_date":end_date, "make":make, "model":model}
-            userLoans.append(loanObj)
+                loanObj = {"status": status, "start_date":start_date, "end_date":end_date, "make":make, "model":model}
+                userClosedLoans.append(loanObj)
 
     return render(request, "loan_equipment_manager/my_loans.html", {
-        "loans": userLoans
+        "loans": userLoans, 
+        "userClosedLoans": userClosedLoans
     })
 
 @login_required
 def my_requests(request):
+    """
+    This view returns all requests for current user
+    which is used to populate my requests table in my_requests template
+
+    Args:
+        request: The HTTP request.
+
+    Returns:
+        render
+    
+    """
     reqPending = Request.objects.filter(end_user_id = request.user.id)
     userReqs = []
     loanPenObj = []
@@ -150,7 +196,6 @@ def my_requests(request):
             end_date = req.req_end_date
             loanPenObj = {"status": req.req_approved, "start_date":start_date, "end_date":end_date, "make":make, "model":model}
             userReqs.append(loanPenObj)
-    print(userReqs)
 
     return render(request, "loan_equipment_manager/my_requests.html", {
         'requests' : userReqs
@@ -158,10 +203,30 @@ def my_requests(request):
 
 @login_required
 def loan_request(request):
+    """
+    Renders loan_requst template which contains a request form
+
+    Args:
+        request: The HTTP request.
+
+    Returns:
+        render
+    
+    """
     return render(request, "loan_equipment_manager/loan_request.html")
 
 @login_required
 def create_request(request):
+    """
+    This view creates a new request for current user based on form data send via Ajax call to this view
+
+    Args:
+        request: The HTTP request.
+
+    Returns:
+        JsonResponse
+    
+    """
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         item = request.POST.get('item_id')
         loanItem = Loan_item.objects.get(id=item)
@@ -190,11 +255,23 @@ def create_request(request):
 @login_required
 @restricted_view
 def accept_request(request, id):
+    """
+    This view set current request as Accepted and returns updated requests data to the Ajax call.
+    Function that calls this view populates the request table with updated data.
+
+    Args:
+        request: The HTTP request.
+        id: unique number for current request
+    Returns:
+        JsonResponse
+    
+    """
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
         itemId = request.GET.get('item_id')
         last_item = Loan.objects.all().last()
         conv_num = ""
+        requestsList = []
 
         if(not last_item):
             conv_num = "LN1"
@@ -209,30 +286,78 @@ def accept_request(request, id):
         userId = Request.objects.filter(id=id).values("end_user_id")
         loanItem = Loan_item.objects.filter(id=itemId).update(on_loan="Yes")
         Loan.objects.create(loan_number = conv_num, items_count = 1, active_loan = "Yes", req_number_id = id, end_user_id = userId[0]['end_user_id'], loan_item_id =  itemId)
-        return JsonResponse({'approved':True})
+        reqs = Request.objects.filter(req_approved = "Pending").all()
+        for req in reqs:
+            item = Loan_item.objects.get(id=req.req_item_id)
+            user = User.objects.get(id=req.end_user_id)
+            requestsList.append({"req_id":req.id, "req_num":req.req_number, "item_id":req.req_item_id, "make":item.make, "model":item.model, "start_date":req.req_start_date, "end_date":req.req_end_date, "username":user.first_name + " " + user.last_name})
+
+        return JsonResponse({'approved':True, 'requests':requestsList})
     return JsonResponse({'approved':False})
 
 @login_required
 @restricted_view
 def reject_request(request, id):
+    """
+    This view set current request as Rejected and returns updated requests data to the Ajax call.
+    Function that calls this view populates the request table with updated data.
+
+    Args:
+        request: The HTTP request.
+        id: unique number for current request
+    Returns:
+        JsonResponse
+    
+    """
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        print("REACHED")
+
         itemId = request.GET.get('item_id') 
+        requestsList = []   
 
         Request.objects.filter(id=id).update(req_approved = "Rejected")
         Loan_item.objects.filter(id=itemId).update(on_loan="No")
-        return JsonResponse({'rejected':True})
+
+        reqs = Request.objects.filter(req_approved = "Pending").all()
+        for req in reqs:
+            item = Loan_item.objects.get(id=req.req_item_id)
+            user = User.objects.get(id=req.end_user_id)
+            requestsList.append({"req_id":req.id, "req_num":req.req_number, "item_id":req.req_item_id, "make":item.make, "model":item.model, "start_date":req.req_start_date, "end_date":req.req_end_date, "username":user.first_name + " " + user.last_name})
+
+        return JsonResponse({'rejected':True,'requests':requestsList})
     return JsonResponse({'approved':False})
 
 @login_required
 def loan_categories(request):
+    """
+    Returns a list of categories from Loan_item model.
+    Used to populate category select element on request form and add loan item form.
+
+    Args:
+        request: The HTTP request.
+    Returns:
+        JsonResponse
+    
+    """
     cat_list = list(Loan_item.CATEGORY)
+
     return JsonResponse({'data': cat_list})
     
 @login_required
 def loan_items(request, *args, **kwargs):
+    """
+    Returns all loan items that are not on loan or pending, and which belong to specified category.
+    Called by Ajax.
+
+    Args:
+        request: The HTTP request.
+        kwargs: selected category
+    Returns:
+        JsonResponse
+    
+    """
     selected_cat = kwargs.get('cat')
     item_list = list(Loan_item.objects.filter(category=selected_cat, on_loan="No").values().exclude(on_loan="Pending"))
+
     return JsonResponse({'data': item_list})
 
 @login_required
@@ -247,6 +372,15 @@ def manage_item(request, id):
 @login_required
 @restricted_view
 def edit_item(request):
+    """
+    Updates current item with new details specified in edit_item form
+
+    Args:
+        request: The HTTP request.
+    Returns:
+        Render
+    
+    """
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         assetNum = request.POST.get('asset_num_new')
         assetNumOld = request.POST.get('asset_num_old')
@@ -289,10 +423,60 @@ def edit_item(request):
 @login_required
 @restricted_view
 def create_loan_item(request):
+    """
+    Creates a new loan item based on values specified in request_form
+
+    Args:
+        request: The HTTP request.
+
+    Returns:
+        JsonResponse
+    
+    """
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        loan_items = Loan_item.objects.all().order_by('asset_number').values()
-        print(loan_items)
-        return JsonResponse({'data': 'test'})
+        make = request.POST.get('make')
+        model = request.POST.get('model')
+        notes = request.POST.get('notes')
+        assetNum = request.POST.get('assetNum')
+        cat = request.POST.get('category')
+        result = False
+        newLoanItem = Loan_item(asset_number = assetNum, make = make, model = model, notes = notes, category = cat, qr_code = None, on_loan = "No")
+
+        try:
+            newLoanItem.save()
+            result = True
+        except Error: 
+            result = False
+
+        return JsonResponse({'success': result})
+
+@login_required
+@restricted_view
+def get_asset_number(request):
+    """
+    This view returns next available asset number.
+    This view is called by populateAssetNumber() JS function in main.js
+
+    Args:
+        request: The HTTP request.
+
+    Returns:
+        JsonResponse
+    
+    """
+    loan_items = Loan_item.objects.annotate(asset_number_int=Cast(Substr('asset_number', 4),output_field=IntegerField())).order_by('asset_number_int')
+    prev_num = None
+    gap = ""
+    # Look for a gap between asset numbers. If found, use it to create new asset number. If not, use next number available.
+    for loan_item in loan_items:
+        if prev_num is not None and loan_item.asset_number_int != prev_num + 1:
+            gap = prev_num + 1
+            break
+        prev_num = loan_item.asset_number_int
+    else:
+        # If no gap was found, set gap to the next number after the last record
+        gap = prev_num + 1 if prev_num is not None else 1
+    return JsonResponse({'data': "LEM" + str(gap)})
 
 @login_required
 @restricted_view
@@ -305,7 +489,15 @@ def manage_user(request, id):
 @login_required
 @restricted_view
 def manage_loans(request):   
+    """
+    Renders manage_loan template with loan data based on their active_loan value
 
+    Args:
+        request: The HTTP request.
+    Returns:
+        Render
+    
+    """
     loanObj = []
     iLoanObj = []
     activeLoans = []
@@ -350,22 +542,57 @@ def manage_loans(request):
 @login_required
 @restricted_view
 def close_loan(request):
+    """
+    Sets current loan as not active and returns updated data back to Ajax.
+    activeLoansTable and closedLoansTable is populated with updated data
+
+    Args:
+        request: The HTTP request.
+        
+    Returns:
+        JsonResponse
+    
+    """
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         loanNum = request.POST.get('loan_num')
         loan = Loan.objects.get(loan_number = loanNum)
+        loanItem = Loan_item.objects.get(id = loan.loan_item.id)
 
         if loan:
             loan.active_loan = "No"
             loan.save()
-            return  JsonResponse({'closed':True})
+            loanItem.on_loan = "No"
+            loanItem.save()
         else:
             return JsonResponse({'closed': None})
+        
+        loans = Loan.objects.filter(active_loan="Yes")
+        loansList = []
+        
+        for ln in loans:
+            item = Loan_item.objects.get(id=ln.loan_item_id)
+            user = User.objects.get(id=ln.end_user_id)
+            req = Request.objects.get(id=ln.req_number_id)
+
+            loansList.append({"loan_num":ln.loan_number, "item": item.make + " " + item.model, "user":user.first_name + " " + user.last_name, "start_date": req.req_start_date, "end_date":req.req_end_date})
+
+        return  JsonResponse({'closed':True, 'loans':loansList})
     else:
         return JsonResponse({'closed' : 'Unauthorized'})
 
 @login_required
 @restricted_view
 def manage_requests(request):
+    """
+    Renders manage_requests template with requests data
+
+    Args:
+        request: The HTTP request.
+
+    Returns:
+        Render
+    
+    """
     return render(request, "loan_equipment_manager/manage_requests.html", {
         "requests": Request.objects.filter(req_approved="Pending"),
         "items": Loan_item.objects.filter(on_loan="Pending"), 

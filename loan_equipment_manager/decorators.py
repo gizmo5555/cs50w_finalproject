@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.NOTSET) # Here
 def allowed_users(allowed_roles=[]):
     def decorator(view_func):
         def wrapper_func(request, *args, **kwargs):
-
+            
             user_groups = request.user.groups.all()
             group_matched = False
             for group in user_groups:
