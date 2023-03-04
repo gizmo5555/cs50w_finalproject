@@ -1,14 +1,17 @@
 from django.urls import path
 
 from . import views
-from .views import loan_categories, loan_items, create_request, accept_request, reject_request, manage_item ,create_loan_item, get_asset_number
+from .views import loan_categories, loan_items, create_request, accept_request, reject_request,create_loan_item, get_asset_number, delete_item, change_password
 
 urlpatterns = [
     path("", views.index, name="index"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
+    path("change_password", change_password, name="change_password"),
+    path("my_account", views.my_account, name="my_account"),
     path("manage_equipment", views.manage_equipment, name="manage_equipment"),
+    path('delete_item/', delete_item, name='delete_item'),
     path("manage_users", views.manage_users, name="manage_users"),
     path('manage_item/<int:id>', views.manage_item, name="manage_item"),
     path('manage_user/<int:id>', views.manage_user, name="manage_user"),

@@ -4,7 +4,7 @@
 <div class="container register">
     <h2>Register</h2>
 
-    <div class="form">
+    <div class="form register">
         <form action="{% url 'register' %}" method="post">
             {% csrf_token %}
             <div class="form-group">
@@ -25,7 +25,9 @@
             <div class="form-group">
                 <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password">
             </div>
-            <input class="btn btn-primary" type="submit" value="Register">
+            <div class="form-group">
+                <input class="btn btn-primary" type="submit" value="Register">
+            </div>
         </form>
     </div>
 

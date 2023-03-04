@@ -16,10 +16,15 @@ import json
 from datetime import datetime
 from django.contrib import auth
 from django.db.models.functions import Cast, Substr
-from django.db.models import IntegerField
+from django.db.models import IntegerField, F
+from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.hashers import check_password
+from django.shortcuts import redirect
 
-def index(request):
-    
+from .helpers import getEquipmentList
+
+
+def index(request):    
     if request.user.is_authenticated:
         reqs = Request.objects.filter(end_user_id = request.user, req_approved="Yes")
         today = datetime.today().strftime('%Y-%m-%d')
@@ -27,9 +32,11 @@ def index(request):
         for req in reqs:
             if today > req.req_end_date:
                 overDueCount += 1
+
         return render(request, "loan_equipment_manager/index.html", {
-        'loans':Loan.objects.filter(end_user_id = request.user.id, active_loan="Yes").count(),
-        'overdue':overDueCount
+        'loansUser':Loan.objects.filter(end_user_id = request.user.id, active_loan="Yes").count(),
+        'overdueUser':overDueCount,
+        'totalStock': Loan_item.objects.count()
         })
     else:
         return render(request, "loan_equipment_manager/index.html")
@@ -57,6 +64,76 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
+
+@login_required
+def my_account(request):
+    return render(request, "loan_equipment_manager/my_account.html", {
+            "user":User.objects.get(id=request.user.id)
+            })
+
+@login_required
+def change_password(request):
+
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+        # Return to index if unathenticated user tries to change password
+            return render(request, 'index.html')
+        else:
+        # Attempt to update details
+            username = request.POST["username"]
+            email = request.POST["email"]
+            first_name = request.POST["fname"]
+            last_name = request.POST["lname"]
+
+            current_pass = request.POST["curPassword"]
+            password = request.POST["newPassword"]
+            confirmation = request.POST["confirmation"]
+
+            if not current_pass and not password and not confirmation:
+                try:
+                    user = User.objects.get(id=request.user.id)
+                    user.first_name = first_name
+                    user.last_name = last_name
+                    user.email = email
+                    user.username = username
+                    user.save()
+                    login(request, user)
+                    return redirect(reverse("my_account") + "?success=1&msg=Account+updated+succesfully.")
+                except IntegrityError:
+                    return redirect(reverse("my_account") + "?message=1&msg=Username+already+taken.")
+
+            elif current_pass and password and confirmation:
+                # Check if the plain text password matches the user's current password
+                if check_password(current_pass, request.user.password):
+                # Do something if the passwords match
+                    if password != confirmation:
+                        return redirect(reverse("my_account") + "?message=1&msg=Passwords+must+match.")
+
+                    try:
+                        user = User.objects.get(id=request.user.id)
+                        user.first_name = first_name
+                        user.last_name = last_name
+                        user.email = email
+                        user.username = username
+                        user.set_password(password)
+                        user.save()
+                        login(request, user)
+                        return redirect(reverse("my_account") + "?success=1&msg=Account+updated+succesfully.")
+                    except IntegrityError:
+                        return redirect(reverse("my_account") + "?message=1&msg=Username+already+taken.")
+                else:
+                # Do something else if the passwords don't match
+                    return redirect(reverse("my_account") + "?message=1&msg=Incorrect+current+password.+Try+Again.")
+            else:
+                if not current_pass:
+                    return redirect(reverse("my_account") + "?message=1&msg=Current+password+cannot+be+empty")
+                elif not password:
+                    return redirect(reverse("my_account") + "?message=1&msg=New+password+cannot+be+empty")
+                else:
+                    return redirect(reverse("my_account") + "?message=1&msg=Password+confirmation+cannot+be+empty")
+            
+    else:
+        return render(request, "loan_equipment_manager/my_account.html")
 
 def register(request):
     if request.method == "POST":
@@ -92,7 +169,10 @@ def register(request):
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
-        return render(request, "loan_equipment_manager/register.html")
+        if not request.user.is_authenticated:
+            return render(request, "loan_equipment_manager/register.html")
+        else:
+            return render(request, "loan_equipment_manager/index.html")
 
 @login_required
 @restricted_view
@@ -109,15 +189,21 @@ def manage_equipment(request):
     
     """
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        equipment = Loan_item.objects.all()
-        equipment_list = list(equipment.values())
-        list_as_json = json.dumps(equipment_list)
 
-        return JsonResponse(list_as_json, safe=False)
+        eqList = getEquipmentList()
+        return JsonResponse(eqList, safe=False)
     
     else:
+        equipment = Loan_item.objects.annotate(
+        asset_number_int=Cast(
+        Substr(F('asset_number'), 4),
+        IntegerField(),
+        ),
+        ).order_by('asset_number_int')
+        
         return render(request, "loan_equipment_manager/manage_equipment.html", {
-            "equipment": Loan_item.objects.all(),
+            #"equipment": Loan_item.objects.all().order_by(F('asset_number').asc()),
+            "equipment": equipment,
             "loan":Loan.objects.filter(active_loan="Yes"),
             "users":User.objects.all()
         })
@@ -356,7 +442,7 @@ def loan_items(request, *args, **kwargs):
     
     """
     selected_cat = kwargs.get('cat')
-    item_list = list(Loan_item.objects.filter(category=selected_cat, on_loan="No").values().exclude(on_loan="Pending"))
+    item_list = list(Loan_item.objects.filter(category=selected_cat, on_loan="No").values().exclude(on_loan="Pending").order_by("make"))
 
     return JsonResponse({'data': item_list})
 
@@ -449,6 +535,42 @@ def create_loan_item(request):
             result = False
 
         return JsonResponse({'success': result})
+
+@login_required
+@restricted_view
+def delete_item(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+
+        asset = request.POST.get('asset_num')
+        item = Loan_item.objects.get(asset_number=asset)
+        req = True
+        loan = True
+
+        try:
+            Request.objects.filter(req_approved="Pending").get(req_item_id=item.id)
+        except ObjectDoesNotExist:
+            req = False
+        
+        try:
+            Loan.objects.filter(active_loan="Yes").get(loan_item_id=item.id)
+        except ObjectDoesNotExist:
+            loan = False
+        
+        if req:
+            return JsonResponse({'deleted':False, 'response':'has a request pending. Reject the request first'})
+        elif loan:
+            return JsonResponse({'deleted':False, 'response':'is currently on loan. Close the loan first'})
+        else:
+            item.delete()
+           
+            eqList = getEquipmentList()
+
+            return JsonResponse({'deleted':True, 'json':eqList})
+    else:
+         return render(request, "loan_equipment_manager/index.html", {
+        })
+
+
 
 @login_required
 @restricted_view
@@ -548,7 +670,7 @@ def close_loan(request):
 
     Args:
         request: The HTTP request.
-        
+
     Returns:
         JsonResponse
     

@@ -1,0 +1,55 @@
+{% extends "loan_equipment_manager/layout.html" %}
+{% block body %}
+
+<div class="container changepass">
+    <h2>Update your account details</h2>
+    <form class="form " method="POST" action="{% url 'change_password' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <input class="form-control" autocomplete="off" autofocus type="text" name="username" placeholder="Username" value={{user.username }}>
+        </div>
+        <div class="form-group">
+            <input class="form-control" autocomplete="off" type="text" name="fname" placeholder="First Name" value={{ user.first_name }}>
+        </div>
+        <div class="form-group">
+            <input class="form-control" autocomplete="off" type="text" name="lname" placeholder="Last Name" value={{ user.last_name }}>
+        </div>
+        <div class="form-group">
+            <input class="form-control" autocomplete="off" type="email" name="email" placeholder="Email Address" value={{ user.email }}>
+        </div>
+        <div class="form-group">
+            <input class="form-control" type="password" name="curPassword" placeholder="Current password">
+        </div>
+        <div class="form-group">
+            <input class="form-control" type="password" name="newPassword" placeholder="New password">
+        </div>
+        <div class="form-group">
+            <input class="form-control" type="password" name="confirmation" placeholder="Confirm New Password">
+        </div>
+        <div class="form-group">
+            <input class="btn btn-primary" type="submit" value="Save changes">
+        </div>
+    </form>
+</div>
+{% if request.GET.message %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert" role="alert">
+    {% if request.GET.msg %}
+        <span>
+            {{ request.GET.msg }}
+        </span>
+        {% endif %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+{% if request.GET.success %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert" role="alert">
+        {% if request.GET.msg %}
+        <span>
+            {{ request.GET.msg }}
+        </span>
+        {% endif %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
+
+{% endblock %}

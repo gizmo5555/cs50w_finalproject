@@ -12,10 +12,10 @@ class User(AbstractUser):
 class Loan_item(models.Model):
     CATEGORY = (
         ('...', '...'),
-        ('Pheripherals', 'Pheripherals'),
-        ('Laptops', 'Laptops'),
         ('Audio', 'Audio'),
-        ('Mobile devices', 'Mobile devices') 
+        ('Laptops', 'Laptops'),
+        ('Mobile devices', 'Mobile devices'),
+        ('Pheripherals', 'Pheripherals')        
     )
     asset_number = models.CharField(max_length=128, )
     make = models.CharField(max_length=128, null=False)

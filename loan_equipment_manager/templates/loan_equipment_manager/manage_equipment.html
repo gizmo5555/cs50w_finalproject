@@ -1,51 +1,54 @@
 {% extends "loan_equipment_manager/layout.html" %}
 
 {% block body %}
-<div class="container">   
+<div class="container table-wrapper">   
     {%csrf_token%}
     <div id="alert-box"></div>
-    <table class="table-fixed table table-dark table-striped table-hover" id="itemsTable">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Asset number</th>
-                <th scope="col">Make</th>
-                <th scope="col">Model</th>
-                <th scope="col">On loan</th>
-                <th scope="col">Notes</th>
-                <th scope="col">User</th>
-                <th scope="col">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in equipment %}
-            <tr class="item" id="item">
-                <th scope="row">{{ forloop.counter }} </th>
-                <td>{{item.asset_number}}</td>
-                <td>{{item.make}}</td>
-                <td>{{item.model}}</td>
-                <td>{{item.on_loan}}</td>
-                <td>{{item.notes}}</td>
-                <td>                
-                    {% if loan %}
-                        {% for loan in loan %}                    
-                            {% if loan.loan_item_id == item.id %}
-                                {% for user in users %}                            
-                                    {% if user.id == loan.end_user_id %}
-                                        {{user.first_name}} {{user.last_name}}
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                </td>
-                <!--<td><a class="btn btn-secondary" href="{% url 'manage_item' item.id %}" >Update</a></td>-->
-                <td><button type="button" id="updateItemButton" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Update</button></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table> 
-
+    <div id="alert-box-items-failure"></div>
+    <div class="table-responsive w-100">
+      <table class="table-lg table table-dark table-striped table-hover" id="itemsTable">
+          <thead>
+              <tr>
+                  <th class="col-md col-lg" scope="col">#</th>
+                  <th scope="col">Asset number</th>
+                  <th scope="col">Make</th>
+                  <th class="col-md-2 col-lg-2" scope="col">Model</th>
+                  <th class="col-md" scope="col">On loan</th>
+                  <th scope="col">Notes</th>
+                  <th scope="col">User</th>
+                  <th scope="col">Action</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for item in equipment %}
+              <tr class="item" id="item">
+                  <th scope="row">{{ forloop.counter }} </th>
+                  <td>{{item.asset_number}}</td>
+                  <td>{{item.make}}</td>
+                  <td>{{item.model}}</td>
+                  <td>{{item.on_loan}}</td>
+                  <td>{{item.notes}}</td>
+                  <td>                
+                      {% if loan %}
+                          {% for loan in loan %}                    
+                              {% if loan.loan_item_id == item.id %}
+                                  {% for user in users %}                            
+                                      {% if user.id == loan.end_user_id %}
+                                          {{user.first_name}} {{user.last_name}}
+                                      {% endif %}
+                                  {% endfor %}
+                              {% endif %}
+                          {% endfor %}
+                      {% endif %}
+                  </td>
+                  <!--<td><a class="btn btn-secondary" href="{% url 'manage_item' item.id %}" >Update</a></td>-->
+                  <td><button type="button" id="updateItemButton" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Update</button>
+                    <button type="button" id="deleteItemButton" class="btn btn-danger">Delete</button></td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table> 
+    </div>
     <div class="input-group mb-3">
         <button type="button" id="addNewItem" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdropAddItem">Add loan equipment</button>
     </div>

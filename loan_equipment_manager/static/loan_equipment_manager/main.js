@@ -85,6 +85,9 @@ function createRequest(request_form){
 
 //Populate modal edit item window with data form current row in loan item table
 function populateModalWindow(){
+    let make_ = null;
+    let model_ = null;
+    let notes_ = null;
     const updateButtons = $('#itemsTable').DataTable().$('button#updateItemButton');
     if(updateButtons){
         for(const btn of updateButtons){
@@ -119,8 +122,62 @@ function populateModalWindow(){
             })
         }
     }
-    else{
-        return;
+
+}
+
+//Adds click event listener to Delete button on equipment table and calls delete_item view to delete current item
+function deleteItem(){
+    //const deleteItemButton = $('#itemsTable').DataTable().$('button#deleteItemButton');
+    const table = document.querySelector('#itemsTable tbody');
+    if(table){
+        table.addEventListener('click', e=>{
+            e.preventDefault();
+            if(e.target.id === 'deleteItemButton'){
+
+                const rowIndex = e.target.closest('tr');
+                const assetNum = rowIndex.querySelector('td:nth-child(2)').textContent;
+                const token = $("#edit_item").find('input[name=csrfmiddlewaretoken]').val()
+                console.log(assetNum);
+                let alertBoxFailure = document.querySelector('#alert-box-items-failure'); 
+                let alertBox = document.querySelector('#alert-box'); 
+                alertBox.innerHTML = "";
+                alertBoxFailure.innerHTML = "";
+                console.log(alertBoxFailure, alertBox);
+                                
+                $.ajax({
+                type:'POST',
+                url: 'delete_item/',
+                headers: {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'},
+                data: {
+                    "csrfmiddlewaretoken" : token,
+                    'asset_num':assetNum
+                    },
+                    success: function(response){
+                    if(response.deleted == true){
+                        alertBox.innerHTML = `<div class="alert alert-success alert-dismissible fade show" role="alert">
+                        This item has been deleted successfuly.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                        const jsonData = JSON.parse(response.json);
+                        populataTable(jsonData, "itemsTable");
+                        sortItemsTable("itemsTable");
+                    }
+                    else{
+                        alertBoxFailure.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        This item ` + response.response + `.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                    }
+                    },
+                    error: function(response){
+                        alertBoxFailure.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        There was an error when deleting this item. Please contact your administrator.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`;
+                    }
+                    })
+
+            }})
     }
 }
 
@@ -186,9 +243,7 @@ function editLoanItem(alertBoxFailure,alertBox){
             })
         })
     }
-    else{
-        return;
-    }
+
 }
 
 //Adds a new loan item to the database.
@@ -475,7 +530,7 @@ function getItemCategories(categoryDataBox,itemsDataBox,buttonType){
                 option.setAttribute('class', 'item')
                 option.setAttribute('value', item[0])
                 categoryDataBox.appendChild(option)
-            })            
+                })
         },
         error: function(error){
             console.log(error)
@@ -494,8 +549,8 @@ function getItemCategories(categoryDataBox,itemsDataBox,buttonType){
                 type:'GET',
                 url:`items-json/${selectedCat}/`,
                 success: function(response){
-                    const itemData = response.data
-    
+
+                    const itemData = response.data    
                     const option = document.createElement('option')
                     option.textContent = "..."
                     option.setAttribute('class', 'item')
@@ -623,8 +678,17 @@ function populataTable(jsonPayload, tableName){
             html += "<td>" + jsonPayload[i].model + "</td>";
             html += "<td>" + jsonPayload[i].on_loan + "</td>";
             html += "<td>" + jsonPayload[i].notes + "</td>";
-            html += "<td></td>";
-            html += `<td><button type="button" id="updateItemButton" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Update</button></td>`;
+            if(jsonPayload[i].user){
+                html += "<td>" + jsonPayload[i].user + "</td>";
+                console.log("<td>"+jsonPayload[i].user+"</td>");
+            }
+            else{
+                html += "<td></td>";
+                console.log("<td></td>");
+            }
+            
+            html += `<td><button type="button" id="updateItemButton" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Update</button>
+            <button type="button" id="deleteItemButton" class="btn btn-danger">Delete</button></td>`;
             html += "</tr>";
           }
     }
@@ -694,37 +758,21 @@ window.addEventListener('DOMContentLoaded', (event) => {
     $('#usersTable').DataTable({
         order: [[1, 'asc']]
     }); 
-    
-
-    //Reference variables
-       
+           
     const request_form = document.getElementById('request_form');
-    const csrf = document.getElementById('csrfmiddlewaretoken');  
+    /*const csrf = document.getElementById('csrfmiddlewaretoken');  
     const item_row = document.querySelectorAll('#item');    
     const accept_btn = document.querySelectorAll('.btn-accept');
-    const reject_btn = document.querySelectorAll('.btn_reject');     
-       
-    //Variables to store column values of item being edited in Manage Equipent table
+    const reject_btn = document.querySelectorAll('.btn_reject');  */       
     
-    let make_ = null;
-    let model_ = null;
-    let notes_ = null;
-
-    /*item_row.forEach(row => {
-        console.log(row);
-        var innerTxt = row.innerHTML
-        var [first, ...rest] = innerTxt.split("</th>");
-        var thdata = first.replaceAll(' ','')
-        var itemId = thdata.replace('<thscope="row">','')
-        innerTxt = ""
-    })*/
 
     //Call to various functions
     createRequest(request_form);
     populateModalWindow();
     editLoanItem();
     closeLoan();
-    addLoanItem();    
+    addLoanItem();  
+    deleteItem();  
     
 
 })   

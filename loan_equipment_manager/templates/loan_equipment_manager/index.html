@@ -1,27 +1,52 @@
 {% extends "loan_equipment_manager/layout.html" %}
-
+{% load auth_extras %}
 {% block body %}
-    {% if user.is_authenticated %}
-    <div class="container-fluid ">
-        <h1>Welcome, {{user.first_name}}!</h1>
-        <div class="row infocards">
-        <div class="card" style="width: 18rem;">
-            <div class="card-body">
-              <h5 class="card-title">Items on loan</h5>
-              <p class="card-text">{{loans}}</p>
-              <!--<a href="{% url 'my_loans' %}" class="btn btn-primary infobtn">My loans</a>-->
+    {% if user.is_authenticated and request.user|has_group:"standard" %}
+        <div class="container-fluid ">
+            <h1>Welcome, {{user.first_name}}!</h1>
+            <div class="row infocards">
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                <h5 class="card-title">Items on loan</h5>
+                <p class="card-text">{{loansUser}}</p>
+                </div>
             </div>
-          </div>
 
-          <div class="card" style="width: 18rem;">
-            <div class="card-body">
-              <h5 class="card-title">Items overdue</h5>
-              <p class="card-text">{{overdue}}</p>
-              <!--<a href="#" class="btn btn-primary infobtn">My loans</a>-->
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                <h5 class="card-title">Items overdue</h5>
+                <p class="card-text">{{overdueUser}}</p>
+                </div>
             </div>
-          </div>
+            </div>
         </div>
-    </div>
+    {% elif request.user|has_group:"admin" or request.user|has_group:"sd admin" %}
+        <div class="container-fluid ">
+            <h1>Welcome, {{user.first_name}}!</h1>
+            <div class="row infocardmain">
+                <div class="card" style="width: 50rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Total items in stock</h5>
+                        <p class="card-text">{{totalStock}}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row infocards">
+                <div class="card" style="width: 25rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Total items on loan</h5>
+                        <p class="card-text">{{loansUser}}</p>
+                    </div>
+                </div>
+
+                <div class="card" style="width: 25rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Total overdue items</h5>
+                        <p class="card-text">{{overdueUser}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     {% else %}
     <div class="login container">
         <h2>Login</h2>
