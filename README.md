@@ -1,8 +1,9 @@
 # CS50W Final Project
 
-## Title: Django Web Application to manage loan equipment in an enterprise
+**Title: Django Web Application to manage loan equipment in an enterprise**
 
 **Author: Tomasz A. Merkel**
+___
 
 ***Versions:***
 
