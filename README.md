@@ -1,4 +1,4 @@
-# CS50W Final Project
+### CS50W Final Project
 # Loan Equipment Manager
 # Author: Tomasz A. Merkel 
 

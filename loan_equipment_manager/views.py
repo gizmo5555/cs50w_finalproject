@@ -321,6 +321,9 @@ def create_request(request):
         else:
             start_date = request.POST.get('start_date')
             end_date = request.POST.get('end_date')
+            print(start_date, end_date)
+            if start_date > end_date:
+                return JsonResponse({'created':"dates"})
             user_id = request.user.id
             last_item = Request.objects.all().last()
             conv_num = ""
@@ -402,7 +405,10 @@ def reject_request(request, id):
         requestsList = []   
 
         Request.objects.filter(id=id).update(req_approved = "Rejected")
-        Loan_item.objects.filter(id=itemId).update(on_loan="No")
+        
+        reqObj = Request.objects.get(id=id)
+        
+        Loan_item.objects.filter(id=reqObj.req_item_id).update(on_loan="No")
 
         reqs = Request.objects.filter(req_approved = "Pending").all()
         for req in reqs:
@@ -498,7 +504,7 @@ def edit_item(request):
                 currentLoanItem.asset_number = assetNum
                 currentLoanItem.make = make
                 currentLoanItem.model = model
-                currentLoanItem.notes = notes
+                currentLoanItem.notes = notescreate_loan
                 currentLoanItem.save()
 
                 return render(request, "loan_equipment_manager/manage_equipment.html", {

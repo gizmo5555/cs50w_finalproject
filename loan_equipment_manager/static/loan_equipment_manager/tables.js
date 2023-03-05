@@ -12,7 +12,7 @@ export function sortAllTables(){
     });
 
     $('#itemsTable').DataTable({
-        order: [1, 'asc'],
+        order: [0, 'asc'],
         columnDefs: [
             { targets: [1,7], orderable: false }
           ]
@@ -51,7 +51,7 @@ export function sortAllTables(){
 export function sortItemsTable(tableName){
     let itmType = "";
     let type = "";
-    let targets = null;
+    let targets = [];
     //Check which table to sort
     if(tableName == "itemsTable"){
         itmType = "LEM";

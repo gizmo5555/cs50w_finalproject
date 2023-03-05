@@ -108,7 +108,6 @@ export function setMinLoanDate(){
     if(start_date){
         start_date.addEventListener('change', e=>{
             var date = $('#start').val();
-            console.log(date);
             $('#end').attr('min', date);
         })
     }   

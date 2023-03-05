@@ -65,11 +65,21 @@ export function createRequest(request_form){
                     </div>`
                     return false;
                     }
-                    alertBox.innerHTML = `<div class="alert alert-success alert-dismissible fade show" role="alert">
-                    Your request has been created!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>`
-                $("#request_form")[0].reset();
+                    else if(response.created == "dates"){
+                        alertBox.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        End date cannot be before start date. Try again.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`
+                    return false
+                    }
+                    else{
+                        alertBox.innerHTML = `<div class="alert alert-success alert-dismissible fade show" role="alert">
+                        Your request has been created!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`
+                    $("#request_form")[0].reset();
+                    }
+                   
                 },
                 error: function(response){
                     alertBox.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
