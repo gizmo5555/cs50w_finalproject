@@ -405,7 +405,7 @@ def reject_request(request, id):
         requestsList = []   
 
         Request.objects.filter(id=id).update(req_approved = "Rejected")
-        
+
         reqObj = Request.objects.get(id=id)
         
         Loan_item.objects.filter(id=reqObj.req_item_id).update(on_loan="No")
@@ -606,7 +606,7 @@ def get_asset_number(request):
         # If no gap was found, set gap to the next number after the last record
         gap = prev_num + 1 if prev_num is not None else 1
     return JsonResponse({'data': "LEM" + str(gap)})
-
+"""
 @login_required
 @restricted_view
 def manage_user(request, id):
@@ -614,7 +614,7 @@ def manage_user(request, id):
     return render(request, "loan_equipment_manager/manage_user.html", {
         "user": user
     })
-
+"""
 @login_required
 @restricted_view
 def manage_loans(request):   
