@@ -358,7 +358,6 @@ def accept_request(request, id):
         last_item = Loan.objects.all().last()
         conv_num = ""
         requestsList = []
-
         if(not last_item):
             conv_num = "LN1"
         else:
@@ -367,17 +366,19 @@ def accept_request(request, id):
             conv_num = int(loan_num)
             conv_num += 1
             conv_num = "LN" + str(conv_num)    
+        
+        Request.objects.filter(id=id).update(req_approved = "Approved")
+        uid = Request.objects.get(id=id)
+        Loan_item.objects.filter(id=uid.req_item.id).update(on_loan="Yes")
 
-        reqItem = Request.objects.filter(id=id).update(req_approved = "Approved")
-        userId = Request.objects.filter(id=id).values("end_user_id")
-        loanItem = Loan_item.objects.filter(id=itemId).update(on_loan="Yes")
-        Loan.objects.create(loan_number = conv_num, items_count = 1, active_loan = "Yes", req_number_id = id, end_user_id = userId[0]['end_user_id'], loan_item_id =  itemId)
+        Loan.objects.create(loan_number = conv_num, items_count = 1, active_loan = "Yes", req_number_id = id, end_user_id = uid.end_user.id, loan_item_id =  uid.req_item.id)       
+        
         reqs = Request.objects.filter(req_approved = "Pending").all()
         for req in reqs:
-            item = Loan_item.objects.get(id=req.req_item_id)
-            user = User.objects.get(id=req.end_user_id)
-            requestsList.append({"req_id":req.id, "req_num":req.req_number, "item_id":req.req_item_id, "make":item.make, "model":item.model, "start_date":req.req_start_date, "end_date":req.req_end_date, "username":user.first_name + " " + user.last_name})
-
+            item = Loan_item.objects.get(id=uid.req_item_id)
+            user = User.objects.get(id=uid.end_user_id)
+            requestsList.append({"req_id":uid.id, "req_num":uid.req_number, "item_id":uid.req_item_id, "make":item.make, "model":item.model, "start_date":uid.req_start_date, "end_date":uid.req_end_date, "username":user.first_name + " " + user.last_name})
+        
         return JsonResponse({'approved':True, 'requests':requestsList})
     return JsonResponse({'approved':False})
 
@@ -688,17 +689,20 @@ def close_loan(request):
         else:
             return JsonResponse({'closed': None})
         
-        loans = Loan.objects.filter(active_loan="Yes")
+        loans = Loan.objects.all()
+        closedLoansList = []
         loansList = []
         
         for ln in loans:
             item = Loan_item.objects.get(id=ln.loan_item_id)
             user = User.objects.get(id=ln.end_user_id)
             req = Request.objects.get(id=ln.req_number_id)
+            if ln.active_loan == "Yes":      
+                loansList.append({"loan_num":ln.loan_number, "item": item.make + " " + item.model, "user":user.first_name + " " + user.last_name, "start_date": req.req_start_date, "end_date":req.req_end_date})
+            else:
+                closedLoansList.append({"loan_num":ln.loan_number, "item": item.make + " " + item.model, "user":user.first_name + " " + user.last_name, "start_date": req.req_start_date, "end_date":req.req_end_date})
 
-            loansList.append({"loan_num":ln.loan_number, "item": item.make + " " + item.model, "user":user.first_name + " " + user.last_name, "start_date": req.req_start_date, "end_date":req.req_end_date})
-
-        return  JsonResponse({'closed':True, 'loans':loansList})
+        return  JsonResponse({'closed':True, 'loans':loansList, 'closedLoans':closedLoansList})
     else:
         return JsonResponse({'closed' : 'Unauthorized'})
 
