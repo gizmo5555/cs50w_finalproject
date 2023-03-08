@@ -12,6 +12,7 @@ export function sortAllTables(){
     });
 
     $('#itemsTable').DataTable({
+        "searching": false,
         order: [0, 'asc'],
         columnDefs: [
             { targets: [1,7], orderable: false }
@@ -19,10 +20,12 @@ export function sortAllTables(){
     });  
 
     $('#myLoansTable').DataTable({
+        "searching": false,
         order: [[1, 'asc']]
     });    
 
     $('#myClosedLoansTable').DataTable({
+        "searching": false,
         order: [[1, 'asc']]
     });   
 

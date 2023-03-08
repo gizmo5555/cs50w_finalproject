@@ -577,8 +577,6 @@ def delete_item(request):
          return render(request, "loan_equipment_manager/index.html", {
         })
 
-
-
 @login_required
 @restricted_view
 def get_asset_number(request):
