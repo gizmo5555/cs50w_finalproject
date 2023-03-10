@@ -9,7 +9,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import user_passes_test
 from datetime import datetime
 from .models import User, Loan, Loan_item, Request
-from .decorators import allowed_users, restricted_view
+from .decorators import restricted_view
 from django.http import Http404, JsonResponse
 import logging
 import json
