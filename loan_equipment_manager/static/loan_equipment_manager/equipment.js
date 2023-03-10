@@ -75,7 +75,7 @@ export function editLoanItem(){
     //const parent = editButton.parentNode.parentNode;
     
     //const secondInput = document.querySelectorAll('form#edit_item input, form#edit_item button')[1];
-
+    
     if(editButton){
         editButton.addEventListener('click', e=>{
             e.preventDefault();
@@ -252,3 +252,4 @@ export function addLoanItem(){
     }
 
 }
+

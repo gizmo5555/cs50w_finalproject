@@ -42,6 +42,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
         //Add event listeners to all Reject buttons in requests page
         //Set request as rejected on submit.
         Requests.reqReject();
+
+        
     }
 
     if(location.pathname === "/manage_equipment"){
@@ -56,6 +58,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
         //Adds event listener to Delete item button
         //Submits a request to the server to delete item
         Equipment.deleteItem(); 
+
+        //Add event listeners to update buttons
+        //Populates the modal window with row data when update button is clicked
+        Tables.populateModalWindow();
     }
 
     if(location.pathname === "/manage_loans"){

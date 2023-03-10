@@ -196,12 +196,11 @@ export function sortItemsTable(tableName){
 
 //Populate modal edit item window with data form current row in loan item table
 export function populateModalWindow(){
-
+    
     const updateButtons = $('#itemsTable').DataTable().$('button#updateItemButton');
     
     if(updateButtons){
         for(const btn of updateButtons){
-            
             btn.addEventListener('click', event=>{
                 let alertBoxFailure = document.getElementById('alert-box-failure');  
                 alertBoxFailure.innerHTML = "";

@@ -452,7 +452,7 @@ def loan_items(request, *args, **kwargs):
     item_list = list(Loan_item.objects.filter(category=selected_cat, on_loan="No").values().exclude(on_loan="Pending").order_by("make"))
 
     return JsonResponse({'data': item_list})
-
+"""
 @login_required
 @restricted_view
 def manage_item(request, id):
@@ -460,7 +460,7 @@ def manage_item(request, id):
     return render(request, "loan_equipment_manager/manage_item.html", {
         "item": item
     })
-
+"""
 
 @login_required
 @restricted_view

@@ -5,7 +5,7 @@ import logging
 from django.http import Http404
 logging.basicConfig(level=logging.NOTSET) # Here
 
-def allowed_users(allowed_roles=[]):
+"""def allowed_users(allowed_roles=[]):
     def decorator(view_func):
         def wrapper_func(request, *args, **kwargs):
             
@@ -20,7 +20,7 @@ def allowed_users(allowed_roles=[]):
             else:
                 return HttpResponse('You are not authorized to view this page')
         return wrapper_func
-    return decorator
+    return decorator"""
 
 def restricted_view(function):
     def wrapper(request, *args, **kwargs):
@@ -29,9 +29,9 @@ def restricted_view(function):
         raise Http404
     return wrapper
 
-def standard_user(function):
+"""def standard_user(function):
     def wrapper(request, *args, **kwargs):
         if request.user.groups.filter(name="standard").exists():
             return function(request, *args, **kwargs)
         raise Http404
-    return wrapper
+    return wrapper"""
