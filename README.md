@@ -110,21 +110,33 @@ $ python manage.py runserver
     1. Group called standard with following permissions:
     
         loan_requipment_manager|loan|Can add loan
+
         loan_requipment_manager|loan|Can change loan
+
         loan_requipment_manager|loan|Can view loan
+
         loan_requipment_manager|loan_item|Can view loan_item
+
         loan_requipment_manager|user|Can change user
+
         loan_requipment_manager|user|Can view user
         
     2. Group called sd admin with following permissions:
     
         loan_requipment_manager|loan|Can add loan
+
         loan_requipment_manager|loan|Can change loan
+
         loan_requipment_manager|loan|Can view loan
+
         loan_requipment_manager|loan|Can delete loan
+
         loan_requipment_manager|loan_item|Can add loan_item
+
         loan_requipment_manager|loan_item|Can change loan_item
+
         loan_requipment_manager|loan_item|Can delete loan_item
+
         loan_requipment_manager|loan_item|Can view loan_item
         
     3. Group called admin with all permissions available in the list.
